@@ -39,10 +39,10 @@
     background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
     box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 10px 44px rgba(0,0,0,.5);
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;                /* явное разрешение жеста */
-    overscroll-behavior: contain;       /* не отдаём жест родителю */
-    pointer-events: auto;               /* на всякий случай */
-    contain: content;                   /* изолируем компоновку */
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+    pointer-events: auto;
+    contain: content;
   }
   .wheel::-webkit-scrollbar{display:none}
 
@@ -54,7 +54,7 @@
                inset 0 -12px 34px rgba(110,231,255,.08),
                inset 0 12px 34px rgba(110,231,255,.08);
     background:linear-gradient(180deg,rgba(110,231,255,.16),rgba(110,231,255,.10));
-    pointer-events:none;                 /* точно не перехватывает */
+    pointer-events:none;
   }
 
   .fade-top,.fade-bot{
@@ -129,7 +129,7 @@
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-  const tg = window.Telegram.WebApp;
+  const tg = window.Telegram.WebApp || {};
   const tp = tg.themeParams || {};
   const css = (k,v)=>document.documentElement.style.setProperty(k,v);
   css('--bg', tp.bg_color || '#0f1115');
@@ -144,9 +144,10 @@
     const spacers = el.querySelectorAll('.spacer');
     const after = spacers[1];
 
-    // очистим старые
+    // очищаем старые
     el.querySelectorAll('.item').forEach(n=>n.remove());
 
+    // вставляем элементы
     const frag = document.createDocumentFragment();
     for (const v of items){
       const d = document.createElement('div');
@@ -158,7 +159,10 @@
 
     const itemsEls = ()=>Array.from(el.querySelectorAll('.item'));
 
-    const centerY = (node)=> node.getBoundingClientRect().top + node.getBoundingClientRect().height/2;
+    const centerY = (node)=> {
+      const r = node.getBoundingClientRect();
+      return r.top + r.height/2;
+    };
     const wheelCenterY = ()=> {
       const r = el.getBoundingClientRect();
       return r.top + r.height/2;
@@ -195,8 +199,7 @@
 
     function snapTo(i, smooth=true){
       const top = scrollTopForIndex(i);
-      // В WebKit лучше не дёргать smooth внутри фазы жеста
-      const doSmooth = smooth && !userScroll;
+      const doSmooth = smooth && !userScroll; // не анимируем в фазе жеста
       if (doSmooth) el.scrollTo({top, behavior:'smooth'});
       else el.scrollTop = top;
       paintActive();
@@ -209,11 +212,11 @@
       settleTimer = setTimeout(()=>{
         userScroll = false;
         const i = nearestIndex();
-        // финальный снап — без smooth для стабильности Safari/Telegram
+        // финальный доклик — без smooth (WebKit стабильнее)
         snapTo(i, false);
         if (i !== lastI){
           lastI = i;
-          tg.HapticFeedback?.impactOccurred("light");
+          tg.HapticFeedback?.impactOccurred?.("light");
           onChange(i);
         }
       }, 120);
@@ -222,14 +225,14 @@
     // init
     snapTo(selectedIdx, false);
     lastI = selectedIdx;
-    onChange(selectedIdx);
+    // ВАЖНО: НЕ вызывать onChange здесь — это ломает порядок инициализации снаружи
     el.addEventListener('scroll', onScroll, {passive:true});
 
-    // перестраховка: при ресайзе/перекраске Telegram WebView
+    // защита от перерисовок/ресайза WebView
     const ro = new ResizeObserver(()=>{ paintActive(); snapTo(nearestIndex(), false); });
     ro.observe(el);
 
-    // Иногда в iOS помогаёт запрет всплытия wheel-событий к родителю
+    // иногда помогает, чтобы скролл не всплывал к родителю
     el.addEventListener('wheel', (e)=>{ e.stopPropagation(); }, {passive:true});
 
     return {
@@ -249,6 +252,9 @@
   const elMon = document.getElementById('wheel-month');
   const elYear= document.getElementById('wheel-year');
 
+  // безопасная инициализация
+  let ready = false;
+
   function clampDay(){
     const y = +years[wYear.getIndex()];
     const mIdx = wMon.getIndex();
@@ -267,22 +273,38 @@
   }
 
   const now = new Date();
-  const wDay  = buildWheel(elDay,  days,  now.getDate()-1, ()=>{ updateValue(); });
-  const wMon  = buildWheel(elMon,  months, now.getMonth(),  ()=>{ clampDay(); updateValue(); });
-  const wYear = buildWheel(elYear, years,  25,              ()=>{ clampDay(); updateValue(); });
 
-  // первичный вывод
+  const wDay  = buildWheel(elDay,  days,   now.getDate()-1, ()=>{
+    if (!ready) return;
+    updateValue();
+  });
+
+  const wMon  = buildWheel(elMon,  months, now.getMonth(), ()=>{
+    if (!ready) return;
+    clampDay();
+    updateValue();
+  });
+
+  const wYear = buildWheel(elYear, years,  25, ()=>{
+    if (!ready) return;
+    clampDay();
+    updateValue();
+  });
+
+  // включаем реакцию на изменения только после того, как все три готовы
+  ready = true;
+  clampDay();
   updateValue();
 
   document.getElementById('send').addEventListener('click',()=>{
     const y = years[wYear.getIndex()];
     const m = String(wMon.getIndex()+1).padStart(2,'0');
     const d = String(wDay.getIndex()+1).padStart(2,'0');
-    tg.sendData(JSON.stringify({type:"date", value:`${y}-${m}-${d}`}));
-    tg.close();
+    tg.sendData?.(JSON.stringify({type:"date", value:`${y}-${m}-${d}`}));
+    tg.close?.();
   });
 
-  tg.ready();
+  tg.ready?.();
 </script>
 </body>
 </html>
