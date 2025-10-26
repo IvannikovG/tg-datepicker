@@ -14,6 +14,7 @@
     --active-glow:rgba(110,231,255,.35);
   }
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{
     margin:0;background:var(--bg);color:var(--fg);
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
@@ -30,47 +31,69 @@
   .col{display:flex;flex-direction:column;align-items:center}
   .label{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
 
+  /* колесо без scroll-snap, управляем сами */
   .wheel{
-    width:110px;height:190px;padding:0 6px;
+    width:110px;height:192px;padding:0 6px;
     overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;
-    scroll-snap-type:y mandatory;border-radius:14px;position:relative;
-    backdrop-filter:saturate(120%) blur(0.2px);
+    border-radius:14px;position:relative;
+    backdrop-filter:saturate(120%) blur(.3px);
     background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
     box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 10px 44px rgba(0,0,0,.5);
+    -webkit-overflow-scrolling: touch;
   }
   .wheel::-webkit-scrollbar{display:none}
 
-  .item{
-    height:48px;display:flex;align-items:center;justify-content:center;
-    scroll-snap-align:center;font-size:18px;color:var(--muted);
-    opacity:.45;transform:scale(.95);
-    transition:transform .12s linear,opacity .12s linear,
-               color .12s linear,text-shadow .12s linear;
-  }
-  .item.active{
-    color:var(--fg);opacity:1;font-weight:700;transform:scale(1.14);
-    text-shadow:0 0 10px var(--active-glow),0 0 22px rgba(0,0,0,.4);
-  }
-
+  /* центральная рамка-приемник выбора */
   .wheel::after{
     content:"";position:absolute;left:8px;right:8px;
-    top:calc(50% - 24px);height:48px;border-radius:10px;
-    pointer-events:none;
+    top:50%;transform:translateY(-50%);
+    height:48px;border-radius:10px;pointer-events:none;
     box-shadow:0 0 0 1px var(--ring),
                inset 0 -12px 34px rgba(110,231,255,.08),
                inset 0 12px 34px rgba(110,231,255,.08);
-    background:linear-gradient(180deg,
-               rgba(110,231,255,.16),
-               rgba(110,231,255,.10));
+    background:linear-gradient(180deg,rgba(110,231,255,.16),rgba(110,231,255,.10));
   }
+
+  /* верх/низ затемняем, чтобы центр читался ещё лучше */
+  .fade-top,.fade-bot{
+    position:absolute;left:0;right:0;height:36px;pointer-events:none;z-index:3;
+  }
+  .fade-top{top:0;background:linear-gradient(180deg,rgba(15,17,21,.85),rgba(15,17,21,0))}
+  .fade-bot{bottom:0;background:linear-gradient(0deg,rgba(15,17,21,.85),rgba(15,17,21,0))}
+
+  .spacer{height:72px} /* сверху/снизу по полтора элемента, чтобы центр сходился ровно */
+
+  .item{
+    height:48px;display:flex;align-items:center;justify-content:center;
+    font-size:18px;color:var(--muted);
+    transition:transform .08s linear,opacity .08s linear,color .08s linear, text-shadow .08s linear;
+    will-change:transform,opacity;
+  }
+
+  /* явная активная строка — жирно, ярко, фон-пилюля */
+  .item.active{
+    color:var(--fg);font-weight:800;opacity:1;transform:scale(1.12);
+    text-shadow:0 0 10px var(--active-glow),0 0 22px rgba(0,0,0,.4);
+    position:relative;
+  }
+  .item.active::before{
+    content:"";position:absolute;left:8px;right:8px;height:36px;border-radius:8px;
+    z-index:-1;
+    background:linear-gradient(135deg,rgba(56,189,248,.22),rgba(139,92,246,.18) 80%);
+    box-shadow:0 6px 20px rgba(56,189,248,.22),0 3px 10px rgba(139,92,246,.18);
+  }
+
+  /* неактивные постепенно блекнут к краям */
+  .item.dim-1{opacity:.75}
+  .item.dim-2{opacity:.55;transform:scale(.98)}
+  .item.dim-3{opacity:.38;transform:scale(.95)}
 
   .value{font-size:14px;color:var(--muted)}
   .btn{
     padding:14px 18px;border-radius:12px;border:none;
     font-weight:700;color:#fff;cursor:pointer;
     background:linear-gradient(135deg,#38bdf8,#8b5cf6 80%);
-    box-shadow:0 10px 30px rgba(56,189,248,.35),
-               0 4px 14px rgba(139,92,246,.25);
+    box-shadow:0 10px 30px rgba(56,189,248,.35),0 4px 14px rgba(139,92,246,.25);
   }
 </style>
 </head>
@@ -79,15 +102,28 @@
   <h1>Выбери дату</h1>
   <div class="wheels">
     <div class="col">
-      <div id="wheel-day" class="wheel"></div>
+      <div class="wheel" id="wheel-day">
+        <div class="fade-top"></div><div class="fade-bot"></div>
+        <div class="spacer"></div>
+        <!-- items вставятся скриптом -->
+        <div class="spacer"></div>
+      </div>
       <div class="label">День</div>
     </div>
     <div class="col">
-      <div id="wheel-month" class="wheel"></div>
+      <div class="wheel" id="wheel-month">
+        <div class="fade-top"></div><div class="fade-bot"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+      </div>
       <div class="label">Месяц</div>
     </div>
     <div class="col">
-      <div id="wheel-year" class="wheel"></div>
+      <div class="wheel" id="wheel-year">
+        <div class="fade-top"></div><div class="fade-bot"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+      </div>
       <div class="label">Год</div>
     </div>
   </div>
@@ -105,73 +141,158 @@
   css('--muted', tp.hint_color || '#7a8599');
   css('--accent', tp.button_color || '#6ee7ff');
 
-  function wheel(el, items, selectedIdx=0){
-    el.innerHTML = ['','','']
-      .concat(items.map(v=>`<div class="item">${v}</div>`))
-      .concat(['','','']).join('');
-    const H=48;
-    const itemsEls=[...el.querySelectorAll('.item')];
-    const snapTop=i=>(i+3)*H-(el.clientHeight/2-H/2);
-    const snapTo=i=>el.scrollTo({top:snapTop(i),behavior:'smooth'});
-    const idx=()=>Math.round((el.scrollTop+el.clientHeight/2-H/2)/H)-3;
-    function markActive(i){
-      itemsEls.forEach((n,j)=>j===i?n.classList.add('active'):n.classList.remove('active'));
-    }
-    let lock=false,t;
-    function onSettled(){
-      const i=Math.max(0,Math.min(itemsEls.length-1,idx()));
-      markActive(i);
-      tg.HapticFeedback?.impactOccurred("light");
-      updateValue();
-    }
-    el.addEventListener('scroll',()=>{
-      clearTimeout(t);
-      t=setTimeout(()=>{
-        if(lock)return;
-        lock=true;
-        el.scrollTo({top:snapTop(idx()),behavior:'smooth'});
-        setTimeout(()=>{lock=false;onSettled();},160);
-      },80);
+  const H = 48; // высота строки
+  const CENTER_PAD = 72; // как в .spacer
+
+  function buildWheel(el, items, selectedIdx = 0, onChange = ()=>{}) {
+    // Вставляем элементы между двумя spacer'ами (уже есть в DOM)
+    const spacers = el.querySelectorAll('.spacer');
+    const before = spacers[0];
+    const after = spacers[1];
+
+    // Удалим старые .item если были
+    el.querySelectorAll('.item').forEach(n=>n.remove());
+
+    const frag = document.createDocumentFragment();
+    items.forEach(v=>{
+      const d = document.createElement('div');
+      d.className = 'item';
+      d.textContent = v;
+      frag.appendChild(d);
     });
-    snapTo(selectedIdx);
-    setTimeout(()=>markActive(selectedIdx),120);
-    return{getIndex:idx,snapTo,markActive};
+    after.before(frag);
+
+    const getItems = () => Array.from(el.querySelectorAll('.item'));
+
+    function indexFromScroll() {
+      const center = el.scrollTop + el.clientHeight / 2;
+      // первый item начинается после spacer'а
+      const firstTop = CENTER_PAD;
+      const i = Math.round((center - firstTop - H/2) / H);
+      return Math.max(0, Math.min(items.length - 1, i));
+    }
+
+    function scrollTopForIndex(i) {
+      // целимся так, чтобы середина элемента совпала с серединой wheel
+      const firstTop = CENTER_PAD;
+      const centerOfItem = firstTop + i * H + H/2;
+      const targetScrollTop = centerOfItem - el.clientHeight/2;
+      return targetScrollTop;
+    }
+
+    let rafId = null;
+    let settleTimer = null;
+    let lastActive = -1;
+
+    function paintActive() {
+      const center = el.scrollTop + el.clientHeight/2;
+      const itemsEls = getItems();
+      itemsEls.forEach((it, idx)=>{
+        const top = CENTER_PAD + idx*H;
+        const mid = top + H/2;
+        const dist = Math.abs(mid - center); // пиксели
+        // ступенчатое «затемнение» вокруг центра
+        it.classList.remove('active','dim-1','dim-2','dim-3');
+        if (dist < 0.51) {
+          it.classList.add('active');
+        } else if (dist < H*1) {
+          it.classList.add('dim-1');
+        } else if (dist < H*2) {
+          it.classList.add('dim-2');
+        } else {
+          it.classList.add('dim-3');
+        }
+      });
+    }
+
+    function onScroll() {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(()=>{
+        paintActive();
+        // дебаунс «магнита»
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(()=>{
+          const i = indexFromScroll();
+          snapTo(i, true);
+          if (i !== lastActive) {
+            lastActive = i;
+            tg.HapticFeedback?.impactOccurred("light");
+            onChange(i);
+          }
+        }, 90);
+      });
+    }
+
+    function snapTo(i, smooth = true) {
+      const top = scrollTopForIndex(i);
+      el.scrollTo({ top, behavior: smooth ? 'smooth' : 'instant' });
+      // мгновенно перерисуем активный (на случай instant)
+      paintActive();
+    }
+
+    // начальная прокрутка к выбранному
+    snapTo(selectedIdx, false);
+    // слушатели
+    el.addEventListener('scroll', onScroll, { passive:true });
+
+    // Первый рендер активного
+    paintActive(); lastActive = selectedIdx; onChange(selectedIdx);
+
+    return {
+      getIndex: indexFromScroll,
+      snapTo,
+      count: () => items.length
+    };
   }
 
-  const days=Array.from({length:31},(_,i)=>String(i+1).padStart(2,'0'));
-  const months=["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
-  const thisYear=new Date().getFullYear();
-  const years=Array.from({length:110},(_,i)=>String(thisYear-i));
+  // Данные
+  const days = Array.from({length:31},(_,i)=>String(i+1).padStart(2,'0'));
+  const months = ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
+  const thisYear = new Date().getFullYear();
+  const years = Array.from({length:110},(_,i)=>String(thisYear-i));
 
-  const wDay=wheel(document.getElementById('wheel-day'),days,new Date().getDate()-1);
-  const wMon=wheel(document.getElementById('wheel-month'),months,new Date().getMonth());
-  const wYear=wheel(document.getElementById('wheel-year'),years,25);
+  // Инициализация колёс
+  const elDay = document.getElementById('wheel-day');
+  const elMon = document.getElementById('wheel-month');
+  const elYear = document.getElementById('wheel-year');
 
-  function clampDay(y,mIdx){
-    const max=new Date(y,mIdx+1,0).getDate();
-    const i=Math.min(wDay.getIndex(),max-1);
-    wDay.snapTo(i);
-    setTimeout(()=>wDay.markActive(i),130);
+  let current = { d: new Date().getDate()-1, m: new Date().getMonth(), y: 25 };
+
+  function updateLabel() {
+    const y = +years[Math.max(0, Math.min(years.length-1, wYear.getIndex()))];
+    const mIdx = Math.max(0, Math.min(11, wMon.getIndex()));
+    const dIdx = Math.max(0, Math.min(days.length-1, wDay.getIndex()));
+    const d = String(dIdx+1).padStart(2,'0');
+    const m = String(mIdx+1).padStart(2,'0');
+    document.getElementById('val').textContent = `${y}-${m}-${d}`;
   }
-  function fmt(){
-    const d=days[Math.max(0,Math.min(30,wDay.getIndex()))]||'01';
-    const mIdx=Math.max(0,Math.min(11,wMon.getIndex()));
-    const m=String(mIdx+1).padStart(2,'0');
-    const y=years[Math.max(0,Math.min(years.length-1,wYear.getIndex()))]||String(thisYear);
-    return{y,m,d,mIdx};
+
+  function clampDayByYM() {
+    const y = +years[Math.max(0, Math.min(years.length-1, wYear.getIndex()))];
+    const mIdx = Math.max(0, Math.min(11, wMon.getIndex()));
+    const max = new Date(y, mIdx+1, 0).getDate();
+    const i = Math.min(wDay.getIndex(), max-1);
+    // если выбрали > max, притянем к последнему дню месяца
+    wDay.snapTo(i, true);
   }
-  function updateValue(){
-    const {y,m,d,mIdx}=fmt();
-    clampDay(+y,mIdx);
-    document.getElementById('val').textContent=`${y}-${m}-${d}`;
-  }
-  updateValue();
+
+  const wDay = buildWheel(elDay, days, current.d, ()=>{ updateLabel(); });
+  const wMon = buildWheel(elMon, months, current.m, ()=>{ clampDayByYM(); updateLabel(); });
+  const wYear = buildWheel(elYear, years, current.y, ()=>{ clampDayByYM(); updateLabel(); });
+
+  // первичная отрисовка значения
+  updateLabel();
 
   document.getElementById('send').addEventListener('click',()=>{
-    const {y,m,d}=fmt();
-    tg.sendData(JSON.stringify({type:"date",value:`${y}-${m}-${d}`}));
+    const y = years[Math.max(0, Math.min(years.length-1, wYear.getIndex()))];
+    const mIdx = Math.max(0, Math.min(11, wMon.getIndex()));
+    const dIdx = Math.max(0, Math.min(days.length-1, wDay.getIndex()));
+    const m = String(mIdx+1).padStart(2,'0');
+    const d = String(dIdx+1).padStart(2,'0');
+    tg.sendData(JSON.stringify({type:"date", value:`${y}-${m}-${d}`}));
     tg.close();
   });
+
   tg.ready();
 </script>
 </body>
