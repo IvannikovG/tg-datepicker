@@ -6,32 +6,71 @@
 <title>Выбор даты</title>
 <style>
   :root {
-    --bg: #0f1115; --fg: #eaeef5; --accent: #6ee7ff; --muted: #7a8599; --ring: rgba(110,231,255,.25);
+    --bg:#0f1115;
+    --fg:#eaeef5;
+    --accent:#6ee7ff;
+    --muted:#7a8599;
+    --ring:rgba(110,231,255,.28);
+    --active-glow:rgba(110,231,255,.35);
   }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-  .wrap { min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; padding:16px; }
-  h1 { font-size:18px; font-weight:600; margin:0; opacity:.92; }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--fg);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  }
+  .wrap{
+    min-height:100svh;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:24px;padding:16px;
+  }
+  h1{font-size:18px;font-weight:600;margin:0;opacity:.92}
 
-  .wheels { display:flex; gap:14px; align-items:center; }
-  .wheel {
-    width:110px; height:180px; padding:0 6px; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none;
-    scroll-snap-type:y mandatory; border-radius:14px;
-    background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-    box-shadow:0 0 0 1px rgba(255,255,255,.04) inset, 0 8px 40px rgba(0,0,0,.45); position:relative;
+  .wheels{display:flex;gap:14px;align-items:center}
+  .col{display:flex;flex-direction:column;align-items:center}
+  .label{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+
+  .wheel{
+    width:110px;height:190px;padding:0 6px;
+    overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;
+    scroll-snap-type:y mandatory;border-radius:14px;position:relative;
+    backdrop-filter:saturate(120%) blur(0.2px);
+    background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
+    box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 10px 44px rgba(0,0,0,.5);
   }
-  .wheel::-webkit-scrollbar { display:none; }
-  .item { height:48px; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--muted); scroll-snap-align:center; }
-  .wheel::after {
-    content:""; position:absolute; left:8px; right:8px; top:calc(50% - 24px); height:48px; border-radius:10px; pointer-events:none;
-    box-shadow:0 0 0 1px var(--ring), inset 0 -10px 30px rgba(110,231,255,.05), inset 0 10px 30px rgba(110,231,255,.05);
-    background:linear-gradient(180deg, rgba(110,231,255,.12), rgba(110,231,255,.08));
+  .wheel::-webkit-scrollbar{display:none}
+
+  .item{
+    height:48px;display:flex;align-items:center;justify-content:center;
+    scroll-snap-align:center;font-size:18px;color:var(--muted);
+    opacity:.45;transform:scale(.95);
+    transition:transform .12s linear,opacity .12s linear,
+               color .12s linear,text-shadow .12s linear;
   }
-  .value { font-size:14px; color:var(--muted); }
-  .btn {
-    padding:14px 18px; border-radius:12px; border:none; font-weight:700; color:white; cursor:pointer;
-    background:linear-gradient(135deg, #38bdf8, #8b5cf6 80%);
-    box-shadow:0 10px 30px rgba(56,189,248,.35), 0 4px 14px rgba(139,92,246,.25);
+  .item.active{
+    color:var(--fg);opacity:1;font-weight:700;transform:scale(1.14);
+    text-shadow:0 0 10px var(--active-glow),0 0 22px rgba(0,0,0,.4);
+  }
+
+  .wheel::after{
+    content:"";position:absolute;left:8px;right:8px;
+    top:calc(50% - 24px);height:48px;border-radius:10px;
+    pointer-events:none;
+    box-shadow:0 0 0 1px var(--ring),
+               inset 0 -12px 34px rgba(110,231,255,.08),
+               inset 0 12px 34px rgba(110,231,255,.08);
+    background:linear-gradient(180deg,
+               rgba(110,231,255,.16),
+               rgba(110,231,255,.10));
+  }
+
+  .value{font-size:14px;color:var(--muted)}
+  .btn{
+    padding:14px 18px;border-radius:12px;border:none;
+    font-weight:700;color:#fff;cursor:pointer;
+    background:linear-gradient(135deg,#38bdf8,#8b5cf6 80%);
+    box-shadow:0 10px 30px rgba(56,189,248,.35),
+               0 4px 14px rgba(139,92,246,.25);
   }
 </style>
 </head>
@@ -39,9 +78,18 @@
 <div class="wrap">
   <h1>Выбери дату</h1>
   <div class="wheels">
-    <div id="wheel-day" class="wheel" aria-label="День"></div>
-    <div id="wheel-month" class="wheel" aria-label="Месяц"></div>
-    <div id="wheel-year" class="wheel" aria-label="Год"></div>
+    <div class="col">
+      <div id="wheel-day" class="wheel"></div>
+      <div class="label">День</div>
+    </div>
+    <div class="col">
+      <div id="wheel-month" class="wheel"></div>
+      <div class="label">Месяц</div>
+    </div>
+    <div class="col">
+      <div id="wheel-year" class="wheel"></div>
+      <div class="label">Год</div>
+    </div>
   </div>
   <div class="value" id="val"></div>
   <button class="btn" id="send">Готово</button>
@@ -57,50 +105,73 @@
   css('--muted', tp.hint_color || '#7a8599');
   css('--accent', tp.button_color || '#6ee7ff');
 
-  function wheel(el, items, selectedIdx = 0) {
-    el.innerHTML = ['','',''].concat(items.map(v=>`<div class="item">${v}</div>`)).concat(['','','']).join('');
-    const H = 48; // item height
-    const snapTo = i => el.scrollTo({ top: (i+3)*H - (el.clientHeight/2 - H/2), behavior:'smooth' });
-    const idx = () => Math.round((el.scrollTop + el.clientHeight/2 - H/2)/H) - 3;
-    let lock=false, t;
-    el.addEventListener('scroll', () => {
+  function wheel(el, items, selectedIdx=0){
+    el.innerHTML = ['','','']
+      .concat(items.map(v=>`<div class="item">${v}</div>`))
+      .concat(['','','']).join('');
+    const H=48;
+    const itemsEls=[...el.querySelectorAll('.item')];
+    const snapTop=i=>(i+3)*H-(el.clientHeight/2-H/2);
+    const snapTo=i=>el.scrollTo({top:snapTop(i),behavior:'smooth'});
+    const idx=()=>Math.round((el.scrollTop+el.clientHeight/2-H/2)/H)-3;
+    function markActive(i){
+      itemsEls.forEach((n,j)=>j===i?n.classList.add('active'):n.classList.remove('active'));
+    }
+    let lock=false,t;
+    function onSettled(){
+      const i=Math.max(0,Math.min(itemsEls.length-1,idx()));
+      markActive(i);
+      tg.HapticFeedback?.impactOccurred("light");
+      updateValue();
+    }
+    el.addEventListener('scroll',()=>{
       clearTimeout(t);
-      t = setTimeout(() => {
-        if(lock) return;
-        lock = true; snapTo(idx()); setTimeout(()=>lock=false, 160);
-        tg.HapticFeedback?.impactOccurred("light");
-        update();
-      }, 90);
+      t=setTimeout(()=>{
+        if(lock)return;
+        lock=true;
+        el.scrollTo({top:snapTop(idx()),behavior:'smooth'});
+        setTimeout(()=>{lock=false;onSettled();},160);
+      },80);
     });
     snapTo(selectedIdx);
-    return { getIndex: idx, snapTo };
+    setTimeout(()=>markActive(selectedIdx),120);
+    return{getIndex:idx,snapTo,markActive};
   }
 
-  const days = Array.from({length:31}, (_,i)=>String(i+1).padStart(2,'0'));
-  const months = ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
-  const thisYear = new Date().getFullYear();
-  const years = Array.from({length:110}, (_,i)=>String(thisYear - i));
+  const days=Array.from({length:31},(_,i)=>String(i+1).padStart(2,'0'));
+  const months=["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
+  const thisYear=new Date().getFullYear();
+  const years=Array.from({length:110},(_,i)=>String(thisYear-i));
 
-  const wDay = wheel(document.getElementById('wheel-day'), days, new Date().getDate()-1);
-  const wMon = wheel(document.getElementById('wheel-month'), months, new Date().getMonth());
-  const wYear = wheel(document.getElementById('wheel-year'), years, 25);
+  const wDay=wheel(document.getElementById('wheel-day'),days,new Date().getDate()-1);
+  const wMon=wheel(document.getElementById('wheel-month'),months,new Date().getMonth());
+  const wYear=wheel(document.getElementById('wheel-year'),years,25);
 
-  function clampDay(year, monthIndex){
-    const max = new Date(year, monthIndex+1, 0).getDate();
-    const i = Math.min(wDay.getIndex(), max-1);
+  function clampDay(y,mIdx){
+    const max=new Date(y,mIdx+1,0).getDate();
+    const i=Math.min(wDay.getIndex(),max-1);
     wDay.snapTo(i);
+    setTimeout(()=>wDay.markActive(i),130);
   }
-  function fmt(){ const d = days[wDay.getIndex()]||'01'; const m=String(wMon.getIndex()+1).padStart(2,'0'); const y=years[wYear.getIndex()]||thisYear; return {y, m, d}; }
-  function update(){ const {y,m,d}=fmt(); clampDay(+y, +m-1); document.getElementById('val').textContent = `${y}-${m}-${d}`; }
-  update();
+  function fmt(){
+    const d=days[Math.max(0,Math.min(30,wDay.getIndex()))]||'01';
+    const mIdx=Math.max(0,Math.min(11,wMon.getIndex()));
+    const m=String(mIdx+1).padStart(2,'0');
+    const y=years[Math.max(0,Math.min(years.length-1,wYear.getIndex()))]||String(thisYear);
+    return{y,m,d,mIdx};
+  }
+  function updateValue(){
+    const {y,m,d,mIdx}=fmt();
+    clampDay(+y,mIdx);
+    document.getElementById('val').textContent=`${y}-${m}-${d}`;
+  }
+  updateValue();
 
-  document.getElementById('send').addEventListener('click', () => {
-    const {y,m,d} = fmt();
-    const payload = JSON.stringify({ type:"date", value:`${y}-${m}-${d}` });
-    tg.sendData(payload);
+  document.getElementById('send').addEventListener('click',()=>{
+    const {y,m,d}=fmt();
+    tg.sendData(JSON.stringify({type:"date",value:`${y}-${m}-${d}`}));
     tg.close();
   });
-
   tg.ready();
 </script>
 </body>
