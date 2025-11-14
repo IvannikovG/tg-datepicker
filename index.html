@@ -19,22 +19,52 @@
     margin:0;background:var(--bg);color:var(--fg);
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
   }
+
   .wrap{
     min-height:100svh;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    gap:24px;padding:16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;      /* ближе к верху */
+    gap:10px;                        /* чуть меньше расстояние между блоками */
+    padding:18px 16px 16px;          /* больше отступ сверху, но не огромный */
   }
-  h1{font-size:18px;font-weight:600;margin:0;opacity:.92}
 
-  .wheels{display:flex;gap:14px;align-items:center}
-  .col{display:flex;flex-direction:column;align-items:center}
-  .label{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+  h1{
+    font-size:18px;
+    font-weight:600;
+    margin:0;
+    opacity:.92;
+  }
 
+  .wheels{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .label{
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+    margin-top:6px;
+  }
+
+  /* КРУТИЛКИ: поуже и подлиннее */
   .wheel{
-    width:110px;height:192px;padding:0 6px;
-    overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;
-    border-radius:14px;position:relative; z-index:0;
+    width:88px;                       /* было 110px */
+    height:224px;                     /* было 192px */
+    padding:0 4px;                    /* было 0 6px */
+    overflow-y:auto;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+    border-radius:14px;
+    position:relative;
+    z-index:0;
     backdrop-filter:saturate(120%) blur(.3px);
     background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
     box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 10px 44px rgba(0,0,0,.5);
@@ -47,53 +77,86 @@
   .wheel::-webkit-scrollbar{display:none}
 
   .wheel::after{
-    content:"";position:absolute;left:8px;right:8px;
-    top:50%;transform:translateY(-50%);
-    height:48px;border-radius:10px;
-    box-shadow:0 0 0 1px var(--ring),
-               inset 0 -12px 34px rgba(110,231,255,.08),
-               inset 0 12px 34px rgba(110,231,255,.08);
-    background:linear-gradient(180deg,rgba(110,231,255,.16),rgba(110,231,255,.10));
-    pointer-events:none;
+    display: none;
   }
 
   .fade-top,.fade-bot{
-    position:absolute;left:0;right:0;height:36px;pointer-events:none;z-index:1;
+    position:absolute;
+    left:0;right:0;
+    height:36px;
+    pointer-events:none;
+    z-index:1;
   }
-  .fade-top{top:0;background:linear-gradient(180deg,rgba(15,17,21,.85),rgba(15,17,21,0))}
-  .fade-bot{bottom:0;background:linear-gradient(0deg,rgba(15,17,21,.85),rgba(15,17,21,0))}
+  .fade-top{
+    top:0;
+    background:linear-gradient(180deg,rgba(15,17,21,.85),rgba(15,17,21,0));
+  }
+  .fade-bot{
+    bottom:0;
+    background:linear-gradient(0deg,rgba(15,17,21,.85),rgba(15,17,21,0));
+  }
 
   .spacer{height:72px}
 
   .item{
-    height:48px;display:flex;align-items:center;justify-content:center;
-    font-size:18px;color:var(--muted);
-    transition:transform .08s linear,opacity .08s linear,color .08s linear, text-shadow .08s linear;
+    height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    color:var(--muted);
+    transition:
+      transform .08s linear,
+      opacity .08s linear,
+      color .08s linear,
+      text-shadow .08s linear;
     will-change:transform,opacity;
   }
   .item.active{
-    color:var(--fg);font-weight:800;opacity:1;transform:scale(1.13);
+    color:var(--fg);
+    font-weight:800;
+    opacity:1;
+    transform:scale(1.13);
     text-shadow:0 0 10px var(--active-glow),0 0 22px rgba(0,0,0,.4);
     position:relative;
   }
   .item.active::before{
-    content:"";position:absolute;left:8px;right:8px;height:36px;border-radius:8px;
+    content:"";
+    position:absolute;
+    left:8px;
+    right:8px;
+    height:36px;
+    border-radius:8px;
     z-index:-1;
     background:linear-gradient(135deg,rgba(56,189,248,.26),rgba(139,92,246,.22) 80%);
-    box-shadow:0 6px 20px rgba(56,189,248,.22),0 3px 10px rgba(139,92,246,.18);
+    box-shadow:
+      0 6px 20px rgba(56,189,248,.22),
+      0 3px 10px rgba(139,92,246,.18);
     pointer-events:none;
   }
   .item.dim-1{opacity:.75}
   .item.dim-2{opacity:.55;transform:scale(.98)}
   .item.dim-3{opacity:.38;transform:scale(.95)}
 
-  .value{font-size:14px;color:var(--muted)}
-  .value strong{color:var(--fg)}
+  .value{
+    font-size:14px;
+    color:var(--muted);
+  }
+  .value strong{
+    color:var(--fg);
+  }
+
   .btn{
-    padding:14px 18px;border-radius:12px;border:none;
-    font-weight:700;color:#fff;cursor:pointer;
+    padding:14px 18px;
+    border-radius:12px;
+    border:none;
+    font-weight:700;
+    color:#fff;
+    cursor:pointer;
     background:linear-gradient(135deg,#38bdf8,#8b5cf6 80%);
-    box-shadow:0 10px 30px rgba(56,189,248,.35),0 4px 14px rgba(139,92,246,.25);
+    box-shadow:
+      0 10px 30px rgba(56,189,248,.35),
+      0 4px 14px rgba(139,92,246,.25);
   }
 </style>
 </head>
@@ -229,7 +292,10 @@
     el.addEventListener('scroll', onScroll, {passive:true});
 
     // защита от перерисовок/ресайза WebView
-    const ro = new ResizeObserver(()=>{ paintActive(); snapTo(nearestIndex(), false); });
+    const ro = new ResizeObserver(()=>{
+      paintActive();
+      snapTo(nearestIndex(), false);
+    });
     ro.observe(el);
 
     // иногда помогает, чтобы скролл не всплывал к родителю
@@ -269,7 +335,8 @@
     const dIdx = wDay.getIndex();
     const m = String(mIdx+1).padStart(2,'0');
     const d = String(dIdx+1).padStart(2,'0');
-    document.getElementById('val').innerHTML = `Выбрано: <strong>${y}-${m}-${d}</strong>`;
+    document.getElementById('val').innerHTML =
+      `Выбрано: <strong>${y}-${m}-${d}</strong>`;
   }
 
   const now = new Date();
